@@ -1,0 +1,26 @@
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Check for Overlay Permission
+        if (!Settings.canDrawOverlays(this)) {
+            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:$packageName"))
+            startActivityForResult(intent, 123)
+        }
+
+        // Check for Accessibility Permission
+        if (!isAccessibilityServiceEnabled()) {
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            startActivity(intent)
+        }
+    }
+
+    private fun isAccessibilityServiceEnabled(): Boolean {
+        val service = "$packageName/${VoiceControlService::class.java.canonicalName}"
+        val enabled = Settings.Secure.getInt(contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED)
+        return enabled == 1 // Simplified check
+    }
+}
