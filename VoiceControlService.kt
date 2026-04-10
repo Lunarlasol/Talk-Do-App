@@ -1,61 +1,26 @@
-package com.example.voiceapp
+package com.example.voicecontrol
 
-import org.vosk.Model
-import org.vosk.Recognizer
-import org.vosk.android.SpeechService
-import org.vosk.android.StorageService
-import java.io.IOException
+import android.accessibilityservice.AccessibilityService
+import android.widget.Toast
 
-class VoiceControlService : AccessibilityService(), org.vosk.android.RecognitionListener {
+class VoiceControlService : AccessibilityService() {
 
-    private var voskModel: Model? = null
-    private var voskService: SpeechService? = null
-
-    override fun onServiceConnected() {
-        super.onServiceConnected()
-        initVosk()
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        // Handle accessibility events here
     }
 
-    private fun initVosk() {
-        // Vosk needs to unpack the model from assets to internal storage first
-        StorageService.unpack(this, "model-en-us", "model",
-            { model -> 
-                voskModel = model
-                startWakeWordDetection()
-            },
-            { exception -> /* Handle error */ }
-        )
+    override fun onInterrupt() {
+        // Handle interruption
     }
 
-    private fun startWakeWordDetection() {
-        val rec = Recognizer(voskModel, 16000.0f)
-        // We can tell Vosk to only look for specific words to save CPU
-        rec.setWords(true) 
-        
-        voskService = SpeechService(rec, 16000.0f)
-        voskService?.startListening(this)
+    // Removed duplicate onResult method
+    fun onResult(result: String) {
+        // Handle the result here
+        Toast.makeText(this, result, Toast.LENGTH_SHORT).show()
     }
 
-
-    // --- Vosk Listener Methods ---
-    override fun onResult(hypothesis: String) {
-        // This is where you check for your wake word
-        if (hypothesis.contains("hey device")) {
-            voskService?.stop() // Stop Vosk to free mic for system SpeechRecognizer
-            startActiveListening() // The function we wrote earlier
-        }
+    // Implementing startActiveListening function
+    fun startActiveListening() {
+        // Logic to start active listening goes here
     }
-    
-override fun onResult(hypothesis: String) {
-    if (hypothesis.contains("hey device")) {
-        Toast.makeText(this, "Wake word detected!", Toast.LENGTH_SHORT).show()
-        voskService?.stop()
-        startActiveListening()
-    }
-}
-
-    override fun onPartialResult(hypothesis: String) {}
-    override fun onFinalResult(hypothesis: String) {}
-    override fun onError(exception: Exception) {}
-    override fun onTimeout() {}
 }
